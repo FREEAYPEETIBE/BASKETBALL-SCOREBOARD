@@ -585,23 +585,73 @@ resetPoss.addEventListener('click', ()=> {
   }
   attachBuzzer(buzzerBtn);
 
-  // Short buzzer via keyboard; playback resume handling
-  window.addEventListener('keydown', (e) => {
-    const tag = document.activeElement && document.activeElement.tagName.toLowerCase();
-    if(tag === 'input' || tag === 'textarea') { if(e.key === 'Escape') document.activeElement.blur(); return; }
-    if(e.key === 'b' || e.key === 'B'){ if(AudioCtx && AudioCtx.state === 'suspended') AudioCtx.resume(); startManualBuzzer(); setTimeout(()=>stopManualBuzzer(), 400); }
-    if(e.code === 'Space'){ e.preventDefault(); if(running) pauseAll(); else startAll(); }
-    if(e.key === 'r' || e.key === 'R'){ gameTime = timePerQuarter; shotTime = shotDefault; renderAll(); }
-    if(e.key === 's' || e.key === 'S'){ shotTime = shotDefault; renderAll(); }
-    if(e.key === '1'){ scoreA += 1; possession='B'; shotTime = shotDefault; renderAll(); }
-    if(e.key === '2'){ scoreA += 2; possession='B'; shotTime = shotDefault; renderAll(); }
-    if(e.key === '3'){ scoreA += 3; possession='B'; shotTime = shotDefault; renderAll(); }
-    if(e.key === '7'){ scoreB += 1; possession='A'; shotTime = shotDefault; renderAll(); }
-    if(e.key === '8'){ scoreB += 2; possession='A'; shotTime = shotDefault; renderAll(); }
-    if(e.key === '9'){ scoreB += 3; possession='A'; shotTime = shotDefault; renderAll(); }
-    if(e.key === 't' || e.key === 'T'){ startTimeout('A', 30); }
-    if(e.key === 'y' || e.key === 'Y'){ startTimeout('B', 30); }
-  });
+  // === Keyboard Shortcuts (PC browser control) ===
+window.addEventListener('keydown', (e) => {
+  const tag = document.activeElement?.tagName.toLowerCase();
+  if (tag === 'input' || tag === 'textarea') {
+    if (e.key === 'Escape') document.activeElement.blur();
+    return;
+  }
+
+  // Prevent default for save/load
+  if (e.ctrlKey && (e.key === 's' || e.key === 'S')) e.preventDefault();
+  if (e.ctrlKey && (e.key === 'l' || e.key === 'L')) e.preventDefault();
+
+  switch (e.key) {
+    // === CLOCKS ===
+    case ' ': e.preventDefault(); if (running) pauseAll(); else startAll(); break;
+    case 'r': case 'R': gameTime = timePerQuarter; shotTime = shotDefault; renderAll(); break;
+    case 's': case 'S': shotTime = shotDefault; renderAll(); break;
+
+    // === SCORE ===
+    case '1': scoreA += 1; renderAll(); break;
+    case '2': scoreA += 2; renderAll(); break;
+    case '3': scoreA += 3; renderAll(); break;
+    case '7': scoreB += 1; renderAll(); break;
+    case '8': scoreB += 2; renderAll(); break;
+    case '9': scoreB += 3; renderAll(); break;
+
+    // === FOULS ===
+    case 'f': case 'F': foulA++; renderAll(); break;
+    case 'g': case 'G': foulB++; renderAll(); break;
+
+    // === QUARTER ===
+    case '[': quarter = Math.max(1, quarter - 1); renderAll(); break;
+    case ']': quarter++; renderAll(); break;
+
+    // === POSSESSION ===
+    case 'ArrowLeft': possession = 'A'; renderAll(); break;
+    case 'ArrowRight': possession = 'B'; renderAll(); break;
+    case '0': possession = null; renderAll(); break;
+
+    // === TIMEOUTS ===
+    case 't': case 'T': startTimeout('A', 30); break;
+    case 'y': case 'Y': startTimeout('B', 30); break;
+
+    // === BUZZER ===
+    case 'b': case 'B':
+      if (AudioCtx && AudioCtx.state === 'suspended') AudioCtx.resume();
+      startManualBuzzer();
+      setTimeout(() => stopManualBuzzer(), 400);
+      break;
+
+    // === BROADCAST / FULLSCREEN ===
+    case 'm': case 'M': broadcastMode.click(); break;
+    case 'f': case 'F':
+      e.preventDefault();
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+      else document.exitFullscreen?.();
+      break;
+
+    // === SAVE / LOAD ===
+    case 's':
+      if (e.ctrlKey) { e.preventDefault(); saveBtn.click(); }
+      break;
+    case 'l':
+      if (e.ctrlKey) { e.preventDefault(); loadBtn.click(); }
+      break;
+  }
+});
 
   // Timeout helpers
   function startTimeout(team, seconds){
