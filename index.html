@@ -454,7 +454,7 @@ document.addEventListener('DOMContentLoaded', () => {
   scoreBtns.forEach(b => b.addEventListener('click', ()=>{
     const team = b.dataset.team, add = parseInt(b.dataset.add||0);
     if(team === 'A') scoreA += add; else scoreB += add;
-    possession = (team === 'A') ? 'B' : 'A';
+    
     shotTime = shotDefault;
     renderAll();
   }));
