@@ -1,0 +1,391 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Broadcast Basketball Scoreboard — Left/Right Possession</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#000814;
+    --panel:#071229;
+    --score-orng:#ff9400;
+    --clock-ylw:#ffd24d;
+    --shot-cyan:#28f1ff;
+    --text:#ffffff;
+    --muted:#98a6bf;
+    --control-bg:rgba(255,255,255,0.03);
+  }
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,var(--bg) 0%,#021022 100%);color:var(--text);}
+  .wrap{width:100%;max-width:1400px;margin:10px auto;padding:10px;}
+  .display{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border-radius:12px;padding:18px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 18px 60px rgba(0,0,0,0.7);display:flex;flex-direction:column;gap:12px;}
+  .display-row{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .team-block{display:flex;flex-direction:column;align-items:center;width:38%;}
+  .team-name-row{display:flex;align-items:center;gap:8px;}
+  .team-name{font-family:"Orbitron",sans-serif;font-weight:700;font-size:30px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;text-align:center;}
+  .pos-arrow{font-family:"Orbitron",sans-serif;font-size:28px;color:transparent;transition:color .12s,text-shadow .12s;}
+  .pos-arrow.active{color:var(--score-orng);text-shadow:0 8px 30px rgba(255,148,0,0.22);}
+  .team-score{font-family:"Orbitron",sans-serif;font-weight:900;font-size:120px;line-height:0.9;color:var(--score-orng);text-shadow:0 10px 40px rgba(255,148,0,0.20),0 0 30px rgba(255,148,0,0.12);}
+  .center-block{display:flex;flex-direction:column;align-items:center;gap:8px;width:24%;}
+  .game-clock{font-family:"Orbitron",sans-serif;font-weight:900;font-size:112px;color:var(--clock-ylw);text-shadow:0 12px 48px rgba(255,210,77,0.16),0 0 40px rgba(255,210,77,0.08);}
+  .meta-row{display:flex;gap:12px;align-items:center;justify-content:center;}
+  .meta-label{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase}
+  .meta-value{font-family:"Orbitron",sans-serif;font-size:40px;font-weight:800;color:var(--text)}
+  .lower-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:6px;}
+  .foul-block{display:flex;flex-direction:column;align-items:center;gap:6px;width:180px;}
+  .foul-value{font-family:"Orbitron",sans-serif;font-size:44px;font-weight:800;color:#fff;text-shadow:0 8px 30px rgba(255,255,255,0.02);}
+  .shot{display:flex;flex-direction:column;align-items:center;gap:6px;width:220px;}
+  .shot-display{font-family:"Orbitron",sans-serif;font-size:64px;font-weight:900;color:var(--shot-cyan);padding:6px 14px;border-radius:8px;background:rgba(255,255,255,0.01);text-shadow:0 8px 30px rgba(40,241,255,0.12)}
+  .shot-display.blink{color:#ff6b6b;text-shadow:0 12px 60px rgba(255,77,77,0.25);transform:scale(1.02)}
+  .timeout-display{font-family:"Orbitron",sans-serif;font-size:30px;font-weight:900;color:#fff;background:rgba(255,255,255,0.02);padding:8px 12px;border-radius:8px;min-width:80px;text-align:center}
+  .controls{margin-top:12px;padding:12px;border-radius:10px;background:var(--control-bg);display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start}
+  .col{display:flex;flex-direction:column;gap:8px;min-width:200px}
+  .input{padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--text)}
+  .btn{padding:10px 14px;border-radius:8px;border:0;cursor:pointer;font-weight:800}
+  .btn-score{background:linear-gradient(180deg,#ffb26a,#ff8a00);color:#091018}
+  .btn-add{background:#0ea5a5;color:#001219}
+  .btn-small{padding:8px 10px;border-radius:6px;background:rgba(255,255,255,0.03);color:var(--text);border:1px solid rgba(255,255,255,0.04)}
+  .btn-danger{background:linear-gradient(180deg,#ff6b6b,#ff2222);color:#200}
+  .label{font-size:13px;color:var(--muted)}
+  .utility{display:flex;gap:8px;align-items:center;margin-left:auto}
+  .buzzer-btn{width:140px;height:80px;border-radius:12px;background:linear-gradient(180deg,#ff4d4d,#cc0000);color:white;font-weight:900;font-size:20px;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 30px rgba(255,0,0,0.18);user-select:none;touch-action:none;}
+  .buzzer-btn:active{transform:translateY(1px) scale(.995)}
+  @media (max-width:1000px){.team-score{font-size:76px}.game-clock{font-size:64px}.team-name{font-size:20px}.shot-display{font-size:44px}.meta-value{font-size:28px}}
+  @media (max-width:600px){.display-row{flex-direction:column;align-items:center}.lower-row{flex-direction:column;align-items:center}.controls{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="broadcast" class="display">
+    <div class="display-row">
+      <div class="team-block">
+        <div class="team-name-row">
+          <div id="arrowA" class="pos-arrow">◀</div>
+          <div class="team-name" id="dispTeamA">HOME</div>
+        </div>
+        <div class="team-score" id="dispScoreA">0</div>
+      </div>
+      <div class="center-block">
+        <div class="game-clock" id="dispGameClock">10:00</div>
+        <div class="meta-row" style="margin-top:6px">
+          <div style="text-align:center"><div class="meta-label">Quarter</div><div class="meta-value" id="dispQuarter">1</div></div>
+          <div style="text-align:center"><div class="meta-label">Poss</div><div class="meta-value" id="dispPoss">—</div></div>
+        </div>
+      </div>
+      <div class="team-block">
+        <div class="team-name-row">
+          <div class="team-name" id="dispTeamB">AWAY</div>
+          <div id="arrowB" class="pos-arrow">▶</div>
+        </div>
+        <div class="team-score" id="dispScoreB">0</div>
+      </div>
+    </div>
+    <div class="lower-row">
+      <div class="foul-block"><div class="meta-label">Fouls A</div><div class="foul-value" id="dispFoulA">0</div></div>
+      <div class="shot"><div class="meta-label">Shot Clock</div><div class="shot-display" id="dispShot">24.0</div></div>
+      <div class="foul-block"><div class="meta-label">Fouls B</div><div class="foul-value" id="dispFoulB">0</div></div>
+    </div>
+  </div>  <!-- Controls -->  <div id="controls" class="controls">
+    <div class="col">
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="teamAInput" class="input" value="HOME" />
+        <button id="applyNames" class="btn btn-small">Apply</button>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-score" data-team="A" data-add="1">A +1</button>
+        <button class="btn btn-score" data-team="A" data-add="2">A +2</button>
+        <button class="btn btn-score" data-team="A" data-add="3">A +3</button>
+        <button id="resetA" class="btn btn-small">A Reset</button>
+      </div>
+    </div><div class="col">
+  <div style="display:flex;gap:8px"><input id="teamBInput" class="input" value="AWAY" /></div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-score" data-team="B" data-add="1">B +1</button>
+    <button class="btn btn-score" data-team="B" data-add="2">B +2</button>
+    <button class="btn btn-score" data-team="B" data-add="3">B +3</button>
+    <button id="resetB" class="btn btn-small">B Reset</button>
+  </div>
+</div>
+
+<div class="col">
+  <div style="display:flex;gap:8px;align-items:center">
+    <label class="label">Game Time (mm:ss)</label>
+    <input id="gameTimeInput" class="input" placeholder="10:00" style="width:110px" />
+    <button id="applyGameTime" class="btn btn-small">Apply</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:6px">
+    <button id="startPause" class="btn btn-add">Start</button>
+    <button id="resetClocks" class="btn btn-small">Reset Clocks</button>
+    <button id="stopAll" class="btn btn-danger">Stop</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+    <label class="label">Quarter</label>
+    <button id="prevQ" class="btn btn-small">◀</button>
+    <div id="quarterControl" style="min-width:30px;text-align:center;font-weight:800">1</div>
+    <button id="nextQ" class="btn btn-small">▶</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:10px;align-items:center">
+    <button id="possLeft" class="btn btn-small">◀ Left Poss</button>
+    <button id="possRight" class="btn btn-small">▶ Right Poss</button>
+    <button id="resetPoss" class="btn btn-small">⟳ Reset Poss</button>
+  </div>
+</div>
+
+  </div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+const dispTeamA = document.getElementById("dispTeamA");
+const dispTeamB = document.getElementById("dispTeamB");
+const dispScoreA = document.getElementById("dispScoreA");
+const dispScoreB = document.getElementById("dispScoreB");
+const dispGameClock = document.getElementById("dispGameClock");
+const dispShot = document.getElementById("dispShot");
+const dispFoulA = document.getElementById("dispFoulA");
+const dispFoulB = document.getElementById("dispFoulB");
+const dispQuarter = document.getElementById("dispQuarter");
+const dispPoss = document.getElementById("dispPoss");
+const arrowA = document.getElementById("arrowA");
+const arrowB = document.getElementById("arrowB");
+
+const teamAInput = document.getElementById("teamAInput");
+const teamBInput = document.getElementById("teamBInput");
+const applyNames = document.getElementById("applyNames");
+const scoreBtns = Array.from(document.querySelectorAll(".btn-score"));
+const resetA = document.getElementById("resetA");
+const resetB = document.getElementById("resetB");
+const foulAplus = document.getElementById("foulAplus");
+const foulAminus = document.getElementById("foulAminus");
+const foulBplus = document.getElementById("foulBplus");
+const foulBminus = document.getElementById("foulBminus");
+const clearFoulA = document.getElementById("clearFoulA");
+const clearFoulB = document.getElementById("clearFoulB");
+const startPause = document.getElementById("startPause");
+const resetClocks = document.getElementById("resetClocks");
+const stopAll = document.getElementById("stopAll");
+const gameTimeInput = document.getElementById("gameTimeInput");
+const applyGameTime = document.getElementById("applyGameTime");
+const prevQ = document.getElementById("prevQ");
+const nextQ = document.getElementById("nextQ");
+const quarterControl = document.getElementById("quarterControl");
+const possLeft = document.getElementById("possLeft");
+const possRight = document.getElementById("possRight");
+const resetPoss = document.getElementById("resetPoss");
+
+// state
+let scoreA = 0,
+scoreB = 0,
+foulA = 0,
+foulB = 0,
+quarter = 1,
+gameTime = 10 * 60,
+timePerQuarter = 10 * 60,
+running = false,
+timerInterval = null,
+poss = null;
+
+// helpers
+function formatMMSS(sec) {
+sec = Math.max(0, Math.floor(sec));
+const m = Math.floor(sec / 60),
+s = sec % 60;
+return "${m}:${s.toString().padStart(2, "0")}";
+}
+
+function render() {
+dispTeamA.textContent = teamAInput.value.toUpperCase();
+dispTeamB.textContent = teamBInput.value.toUpperCase();
+dispScoreA.textContent = scoreA;
+dispScoreB.textContent = scoreB;
+dispFoulA.textContent = foulA;
+dispFoulB.textContent = foulB;
+dispQuarter.textContent = quarter;
+dispGameClock.textContent = formatMMSS(gameTime);
+dispPoss.textContent = poss ? poss : "—";
+arrowA.classList.toggle("active", poss === "A");
+arrowB.classList.toggle("active", poss === "B");
+}
+
+// score controls
+scoreBtns.forEach((b) =>
+b.addEventListener("click", () => {
+const team = b.dataset.team,
+add = parseInt(b.dataset.add || 0);
+if (team === "A") {
+scoreA += add;
+poss = "B";
+} else {
+scoreB += add;
+poss = "A";
+}
+render();
+})
+);
+
+resetA.addEventListener("click", () => {
+scoreA = 0;
+render();
+});
+resetB.addEventListener("click", () => {
+scoreB = 0;
+render();
+});
+
+foulAplus.addEventListener("click", () => {
+foulA++;
+render();
+});
+foulAminus.addEventListener("click", () => {
+foulA = Math.max(0, foulA - 1);
+render();
+});
+foulBplus.addEventListener("click", () => {
+foulB++;
+render();
+});
+foulBminus.addEventListener("click", () => {
+foulB = Math.max(0, foulB - 1);
+render();
+});
+clearFoulA.addEventListener("click", () => {
+foulA = 0;
+render();
+});
+clearFoulB.addEventListener("click", () => {
+foulB = 0;
+render();
+});
+
+// game clock
+function startClock() {
+if (running) return;
+running = true;
+startPause.textContent = "Pause";
+timerInterval = setInterval(() => {
+if (gameTime > 0) {
+gameTime--;
+render();
+} else {
+clearInterval(timerInterval);
+running = false;
+}
+}, 1000);
+}
+
+function pauseClock() {
+running = false;
+startPause.textContent = "Start";
+clearInterval(timerInterval);
+}
+
+startPause.addEventListener("click", () => {
+running ? pauseClock() : startClock();
+});
+
+resetClocks.addEventListener("click", () => {
+pauseClock();
+gameTime = timePerQuarter;
+render();
+});
+
+stopAll.addEventListener("click", () => {
+pauseClock();
+gameTime = 0;
+render();
+});
+
+applyGameTime.addEventListener("click", () => {
+const v = gameTimeInput.value.trim();
+let sec = null;
+if (v.includes(":")) {
+const parts = v.split(":").map((p) => parseInt(p || 0));
+if (parts.length === 2)
+sec = parts[0] * 60 + Math.min(59, Math.max(0, parts[1]));
+} else {
+const m = parseFloat(v);
+if (!isNaN(m)) sec = Math.round(m * 60);
+}
+if (sec === null || isNaN(sec)) {
+alert("Enter time as mm:ss or minutes (e.g., 10:00 or 10)");
+return;
+}
+gameTime = sec;
+timePerQuarter = sec;
+render();
+});
+
+prevQ.addEventListener("click", () => {
+quarter = Math.max(1, quarter - 1);
+render();
+});
+nextQ.addEventListener("click", () => {
+quarter++;
+render();
+});
+applyNames.addEventListener("click", () => {
+render();
+});
+
+// possession controls
+possLeft.addEventListener("click", () => {
+poss = "A";
+render();
+});
+possRight.addEventListener("click", () => {
+poss = "B";
+render();
+});
+resetPoss.addEventListener("click", () => {
+poss = null;
+render();
+});
+
+// keyboard shortcuts
+window.addEventListener("keydown", (e) => {
+if (e.key === "1") {
+scoreA++;
+poss = "B";
+render();
+}
+if (e.key === "2") {
+scoreA += 2;
+poss = "B";
+render();
+}
+if (e.key === "3") {
+scoreA += 3;
+poss = "B";
+render();
+}
+if (e.key === "7") {
+scoreB++;
+poss = "A";
+render();
+}
+if (e.key === "8") {
+scoreB += 2;
+poss = "A";
+render();
+}
+if (e.key === "9") {
+scoreB += 3;
+poss = "A";
+render();
+}
+if (e.code === "Space") {
+e.preventDefault();
+running ? pauseClock() : startClock();
+}
+if (e.key === "r" || e.key === "R") {
+gameTime = timePerQuarter;
+render();
+}
+});
+
+render();
+});
+</script>
+
+</body>
+</html>
