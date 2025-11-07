@@ -3,216 +3,237 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Broadcast Basketball Scoreboard — Pro (Fixed)</title>
+<title>Broadcast Basketball Scoreboard — Final (Orange/Yellow)</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#000814; --accent:#ff8a00; --clock:#ffd24d; --shot:#28f1ff; --text:#ffffff; --muted:#98a6bf;
+    --bg:#000814;
+    --panel:#071229;
+    --score-orng: #ff9400; /* orange for scores */
+    --clock-ylw: #ffd24d; /* yellow for game clock */
+    --shot-cyan: #28f1ff;
+    --text:#ffffff;
+    --muted:#98a6bf;
+    --control-bg: rgba(255,255,255,0.03);
   }
-  html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
-  body{background:linear-gradient(180deg,#000814 0%, #021022 100%); color:var(--text); display:flex; flex-direction:column; align-items:center; padding:8px;}
-  .container{width:100%; max-width:1400px;}
-  .display {display:flex; flex-direction:column; gap:10px; padding:18px; border-radius:12px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.03); box-shadow:0 18px 60px rgba(0,0,0,0.7);}
-  .display-row{display:flex; align-items:center; justify-content:space-between; gap:12px;}
-  .team-block{display:flex; flex-direction:column; align-items:center; width:38%;}
-  .team-name{font-family: "Orbitron", sans-serif; font-weight:700; font-size:30px; letter-spacing:2px; color:var(--muted); text-transform:uppercase; text-align:center;}
-  .team-score{font-family: "Orbitron", sans-serif; font-size:130px; font-weight:900; color:var(--accent); line-height:0.95; text-shadow:0 6px 28px rgba(255,138,0,0.15);}
-  .center-block{display:flex; flex-direction:column; align-items:center; gap:10px; width:24%;}
-  .game-clock{font-family: "Orbitron", sans-serif; font-size:120px; font-weight:900; color:var(--clock); text-shadow:0 8px 40px rgba(255,210,77,0.14);}
-  .meta-row{display:flex; gap:12px; align-items:center; justify-content:center;}
-  .meta-item{display:flex; flex-direction:column; align-items:center;}
-  .meta-label{font-size:14px;color:var(--muted); font-weight:600;}
-  .meta-value{font-family: "Orbitron", sans-serif; font-size:44px; font-weight:800; color:var(--text);}
-  .lower-row{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:4px;}
-  .shot {display:flex; flex-direction:column; align-items:center; gap:6px; width:220px;}
-  .shot-display{font-family: "Orbitron", sans-serif; font-size:66px; font-weight:900; color:var(--shot); padding:4px 12px; border-radius:8px; background: rgba(255,255,255,0.01);}
-  .shot-display.blink{ color:#ffb4b4; text-shadow: 0 8px 40px rgba(255,77,77,0.25);}
-  .foul-block{display:flex;flex-direction:column;align-items:center; gap:6px; width:180px;}
-  .foul-value{font-family: "Orbitron", sans-serif; font-size:46px; font-weight:800; color:#ffffff;}
-  .timeout-display{font-family: "Orbitron", sans-serif; font-size:34px; font-weight:900; color:#ffffff; background:rgba(255,255,255,0.02); padding:8px 12px; border-radius:8px;}
-  .controls-panel{margin-top:12px; display:flex; gap:12px; padding:12px; border-radius:10px; background:rgba(255,255,255,0.03); align-items:flex-start; flex-wrap:wrap;}
-  .col{display:flex;flex-direction:column; gap:8px;}
-  .btn{padding:10px 14px;border-radius:8px;border:0;cursor:pointer;font-weight:700}
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,var(--bg) 0%, #021022 100%); color:var(--text);}
+  .wrap{width:100%;max-width:1400px;margin:10px auto;padding:10px;}
+  .display{
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:12px;padding:18px;border:1px solid rgba(255,255,255,0.03); box-shadow:0 18px 60px rgba(0,0,0,0.7);
+    display:flex; flex-direction:column; gap:12px;
+  }
+  .display-row{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .team-block{display:flex;flex-direction:column;align-items:center;width:38%;}
+  .team-name{font-family:"Orbitron",sans-serif;font-weight:700;font-size:30px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;text-align:center;}
+  .team-score{
+    font-family:"Orbitron",sans-serif;font-weight:900;font-size:120px;line-height:0.9;color:var(--score-orng);
+    text-shadow: 0 10px 40px rgba(255,148,0,0.20), 0 0 30px rgba(255,148,0,0.12);
+  }
+  .center-block{display:flex;flex-direction:column;align-items:center;gap:8px;width:24%;}
+  .game-clock{
+    font-family:"Orbitron",sans-serif;font-weight:900;font-size:112px;color:var(--clock-ylw);
+    text-shadow: 0 12px 48px rgba(255,210,77,0.16), 0 0 40px rgba(255,210,77,0.08);
+  }
+  .meta-row{display:flex;gap:12px;align-items:center;justify-content:center;}
+  .meta-label{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase}
+  .meta-value{font-family:"Orbitron",sans-serif;font-size:40px;font-weight:800;color:var(--text)}
+  .lower-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:6px;}
+  .foul-block{display:flex;flex-direction:column;align-items:center;gap:6px;width:180px;}
+  .foul-value{font-family:"Orbitron",sans-serif;font-size:44px;font-weight:800;color:#fff;text-shadow:0 8px 30px rgba(255,255,255,0.02);}
+  .shot{display:flex;flex-direction:column;align-items:center;gap:6px;width:220px;}
+  .shot-display{font-family:"Orbitron",sans-serif;font-size:64px;font-weight:900;color:var(--shot-cyan);padding:6px 14px;border-radius:8px;background:rgba(255,255,255,0.01);text-shadow:0 8px 30px rgba(40,241,255,0.12)}
+  .shot-display.blink{ color:#ff6b6b; text-shadow: 0 12px 60px rgba(255,77,77,0.25); transform:scale(1.02)}
+  .timeout-display{font-family:"Orbitron",sans-serif;font-size:30px;font-weight:900;color:#fff;background:rgba(255,255,255,0.02);padding:8px 12px;border-radius:8px;min-width:80px;text-align:center}
+  /* Controls */
+  .controls{margin-top:12px;padding:12px;border-radius:10px;background:var(--control-bg);display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start}
+  .col{display:flex;flex-direction:column;gap:8px;min-width:200px}
+  .input{padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--text)}
+  .btn{padding:10px 14px;border-radius:8px;border:0;cursor:pointer;font-weight:800}
+  .btn-score{background:linear-gradient(180deg,#ffb26a,#ff8a00);color:#091018}
   .btn-add{background:#0ea5a5;color:#001219}
-  .btn-score{background:var(--accent); color:#071421}
-  .btn-danger{background:#ff4d4d; color:#200}
   .btn-small{padding:8px 10px;border-radius:6px;background:rgba(255,255,255,0.03);color:var(--text);border:1px solid rgba(255,255,255,0.04)}
-  .input {padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--text)}
+  .btn-danger{background:linear-gradient(180deg,#ff6b6b,#ff2222);color:#200}
   .label{font-size:13px;color:var(--muted)}
-  @media (max-width:1000px){ .team-score{font-size:86px} .game-clock{font-size:64px} .team-name{font-size:20px} .shot-display{font-size:44px} .meta-value{font-size:32px}}
-  @media (max-width:600px){ .display{padding:12px} .team-block, .center-block{width:100%} .display-row{flex-direction:column; align-items:center} .lower-row{flex-direction:column; align-items:center} .controls-panel{flex-direction:column} }
-  .buzzer-btn{width:120px;height:80px;border-radius:12px;background:linear-gradient(180deg,#ff4d4d,#cc0000); color:white; font-weight:900; font-size:20px; box-shadow:0 12px 30px rgba(255,0,0,0.18); border:0; cursor:pointer; display:flex; align-items:center; justify-content:center; user-select:none;}
-  .buzzer-btn:active{transform:translateY(1px) scale(.995);}
+  .utility{display:flex;gap:8px;align-items:center;margin-left:auto}
+  /* Buzzer */
+  .buzzer-btn{width:140px;height:80px;border-radius:12px;background:linear-gradient(180deg,#ff4d4d,#cc0000);color:white;font-weight:900;font-size:20px;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 30px rgba(255,0,0,0.18);user-select:none;touch-action:none;}
+  .buzzer-btn:active{transform:translateY(1px) scale(.995)}
+  @media (max-width:1000px){
+    .team-score{font-size:76px}
+    .game-clock{font-size:64px}
+    .team-name{font-size:20px}
+    .shot-display{font-size:44px}
+    .meta-value{font-size:28px}
+  }
+  @media (max-width:600px){
+    .display-row{flex-direction:column;align-items:center}
+    .lower-row{flex-direction:column;align-items:center}
+    .controls{flex-direction:column}
+  }
 </style>
 </head>
 <body>
-<div class="container">
-  <div id="broadcastDisplay" class="display" aria-hidden="false">
-    <div class="display-row">
-      <div class="team-block" id="displayA">
-        <div class="team-name" id="dispTeamA">HOME</div>
-        <div class="team-score" id="dispScoreA">0</div>
-      </div>
-
-      <div class="center-block">
-        <div class="game-clock" id="dispGameClock">10:00</div>
-        <div class="meta-row">
-          <div class="meta-item"><div class="meta-label">Quarter</div><div class="meta-value" id="dispQuarter">1</div></div>
-          <div class="meta-item"><div class="meta-label">Poss</div><div class="meta-value" id="dispPoss">A</div></div>
+  <div class="wrap">
+    <!-- Broadcast Display -->
+    <div id="broadcast" class="display" role="region" aria-label="Broadcast Display">
+      <div class="display-row">
+        <div class="team-block">
+          <div class="team-name" id="dispTeamA">HOME</div>
+          <div class="team-score" id="dispScoreA">0</div>
         </div>
-        <div style="display:flex;gap:10px;margin-top:8px">
-          <div style="text-align:center">
-            <div class="label">Timeout A</div>
-            <div class="timeout-display" id="dispTimeoutA">—</div>
+
+        <div class="center-block">
+          <div class="game-clock" id="dispGameClock">10:00</div>
+          <div class="meta-row" style="margin-top:6px">
+            <div style="text-align:center"><div class="meta-label">Quarter</div><div class="meta-value" id="dispQuarter">1</div></div>
+            <div style="text-align:center"><div class="meta-label">Poss</div><div class="meta-value" id="dispPoss">A</div></div>
           </div>
-          <div style="text-align:center">
-            <div class="label">Timeout B</div>
-            <div class="timeout-display" id="dispTimeoutB">—</div>
+          <div style="display:flex;gap:10px;margin-top:8px">
+            <div style="text-align:center"><div class="label">Timeout A</div><div class="timeout-display" id="dispTimeoutA">—</div></div>
+            <div style="text-align:center"><div class="label">Timeout B</div><div class="timeout-display" id="dispTimeoutB">—</div></div>
           </div>
         </div>
-      </div>
 
-      <div class="team-block" id="displayB">
-        <div class="team-name" id="dispTeamB">AWAY</div>
-        <div class="team-score" id="dispScoreB">0</div>
-      </div>
-    </div>
-
-    <div class="lower-row">
-      <div class="foul-block">
-        <div class="meta-label">Fouls A</div>
-        <div class="foul-value" id="dispFoulA">0</div>
-      </div>
-
-      <div class="shot">
-        <div class="meta-label">Shot Clock</div>
-        <div class="shot-display" id="dispShot">24.0</div>
-      </div>
-
-      <div class="foul-block">
-        <div class="meta-label">Fouls B</div>
-        <div class="foul-value" id="dispFoulB">0</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="controls-panel" id="controlsPanel" role="region" aria-label="Control Panel">
-    <div class="col" style="min-width:220px">
-      <div style="display:flex;gap:8px;align-items:center">
-        <input id="teamAInput" class="input" value="HOME" />
-        <button class="btn btn-small" id="applyNames">Apply</button>
-      </div>
-
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-score" data-team="A" data-add="1">A +1</button>
-        <button class="btn btn-score" data-team="A" data-add="2">A +2</button>
-        <button class="btn btn-score" data-team="A" data-add="3">A +3</button>
-        <button class="btn btn-small" id="resetA">A Reset</button>
-      </div>
-
-      <div style="display:flex;gap:6px;align-items:center">
-        <div class="label">Fouls:</div>
-        <button class="btn btn-small" id="foulAminus">-</button>
-        <div id="foulAcontrol" style="font-weight:800;min-width:28px;text-align:center">0</div>
-        <button class="btn btn-small" id="foulAplus">+</button>
-        <button class="btn btn-danger" id="clearFoulA">Clear</button>
-      </div>
-
-      <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
-        <button class="btn btn-small" id="timeoutA30">Timeout A 30s</button>
-        <button class="btn btn-small" id="timeoutA60">Timeout A 60s</button>
-        <button class="btn btn-small" id="cancelTimeoutA">Cancel</button>
-      </div>
-    </div>
-
-    <div class="col" style="min-width:260px">
-      <div style="display:flex;gap:8px">
-        <input id="teamBInput" class="input" value="AWAY" />
-      </div>
-
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-score" data-team="B" data-add="1">B +1</button>
-        <button class="btn btn-score" data-team="B" data-add="2">B +2</button>
-        <button class="btn btn-score" data-team="B" data-add="3">B +3</button>
-        <button class="btn btn-small" id="resetB">B Reset</button>
-      </div>
-
-      <div style="display:flex;gap:6px;align-items:center">
-        <div class="label">Fouls:</div>
-        <button class="btn btn-small" id="foulBminus">-</button>
-        <div id="foulBcontrol" style="font-weight:800;min-width:28px;text-align:center">0</div>
-        <button class="btn btn-small" id="foulBplus">+</button>
-        <button class="btn btn-danger" id="clearFoulB">Clear</button>
-      </div>
-
-      <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
-        <button class="btn btn-small" id="timeoutB30">Timeout B 30s</button>
-        <button class="btn btn-small" id="timeoutB60">Timeout B 60s</button>
-        <button class="btn btn-small" id="cancelTimeoutB">Cancel</button>
-      </div>
-    </div>
-
-    <div class="col" style="min-width:220px">
-      <div style="display:flex;gap:8px;align-items:center">
-        <label class="label">Game Time (mm:ss)</label>
-        <input id="gameTimeInput" class="input" placeholder="10:00" style="width:100px"/>
-        <button class="btn btn-small" id="applyGameTime">Apply</button>
-      </div>
-
-      <div style="display:flex;gap:8px;margin-top:6px">
-        <button class="btn btn-add" id="startPause">Start</button>
-        <button class="btn btn-small" id="resetClocks">Reset Clocks</button>
-        <button class="btn btn-danger" id="stopAll">Stop</button>
-      </div>
-
-      <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
-        <label class="label">Quarter</label>
-        <button class="btn btn-small" id="prevQ">◀</button>
-        <div id="quarterControl" style="font-weight:800;min-width:30px;text-align:center">1</div>
-        <button class="btn btn-small" id="nextQ">▶</button>
-      </div>
-    </div>
-
-    <div class="col" style="min-width:240px">
-      <div style="display:flex;gap:8px;align-items:center">
-        <label class="label">Shot Clock</label>
-        <input id="customShotInput" class="input" style="width:90px" value="24" />
-        <button class="btn btn-small" id="applyShot">Apply</button>
-      </div>
-
-      <div style="display:flex;gap:8px;margin-top:6px">
-        <button class="btn btn-small" id="reset24">Reset 24</button>
-        <button class="btn btn-small" id="reset14">Reset 14</button>
-      </div>
-
-      <div style="display:flex;gap:8px;margin-top:10px;align-items:center">
-        <button class="btn btn-small" id="swapPoss">Toggle Poss</button>
-        <div style="margin-left:auto" class="control-row">
-          <label class="label" style="margin-right:6px">Auto-buzzer</label>
-          <select id="autoBuzzerLen" class="input" style="width:80px">
-            <option value="3">3s</option>
-            <option value="5">5s</option>
-          </select>
-          <button class="btn btn-small" id="broadcastMode">Broadcast Mode</button>
-          <button class="btn btn-small" id="fullscreenBtn">Fullscreen</button>
-          <button class="btn btn-small" id="saveBtn">Save</button>
-          <button class="btn btn-small" id="loadBtn">Load</button>
+        <div class="team-block">
+          <div class="team-name" id="dispTeamB">AWAY</div>
+          <div class="team-score" id="dispScoreB">0</div>
         </div>
       </div>
 
-      <div style="display:flex;gap:12px;margin-top:12px;align-items:center">
-        <div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Manual Buzzer (hold/touch)</div>
-          <button id="buzzerBtn" class="buzzer-btn" aria-pressed="false">BUZZER</button>
+      <div class="lower-row">
+        <div class="foul-block">
+          <div class="meta-label">Fouls A</div>
+          <div class="foul-value" id="dispFoulA">0</div>
+        </div>
+
+        <div class="shot">
+          <div class="meta-label">Shot Clock</div>
+          <div class="shot-display" id="dispShot">24.0</div>
+        </div>
+
+        <div class="foul-block">
+          <div class="meta-label">Fouls B</div>
+          <div class="foul-value" id="dispFoulB">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div id="controls" class="controls" role="region" aria-label="Control Panel">
+      <!-- Team A -->
+      <div class="col">
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="teamAInput" class="input" value="HOME" />
+          <button id="applyNames" class="btn btn-small">Apply</button>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-score" data-team="A" data-add="1">A +1</button>
+          <button class="btn btn-score" data-team="A" data-add="2">A +2</button>
+          <button class="btn btn-score" data-team="A" data-add="3">A +3</button>
+          <button id="resetA" class="btn btn-small">A Reset</button>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <div class="label">Fouls</div>
+          <button id="foulAminus" class="btn btn-small">-</button>
+          <div id="foulAcontrol" style="min-width:28px;text-align:center;font-weight:800">0</div>
+          <button id="foulAplus" class="btn btn-small">+</button>
+          <button id="clearFoulA" class="btn btn-danger">Clear</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button id="timeoutA30" class="btn btn-small">Timeout A 30s</button>
+          <button id="timeoutA60" class="btn btn-small">Timeout A 60s</button>
+          <button id="cancelTimeoutA" class="btn btn-small">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Team B -->
+      <div class="col">
+        <div style="display:flex;gap:8px">
+          <input id="teamBInput" class="input" value="AWAY" />
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-score" data-team="B" data-add="1">B +1</button>
+          <button class="btn btn-score" data-team="B" data-add="2">B +2</button>
+          <button class="btn btn-score" data-team="B" data-add="3">B +3</button>
+          <button id="resetB" class="btn btn-small">B Reset</button>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <div class="label">Fouls</div>
+          <button id="foulBminus" class="btn btn-small">-</button>
+          <div id="foulBcontrol" style="min-width:28px;text-align:center;font-weight:800">0</div>
+          <button id="foulBplus" class="btn btn-small">+</button>
+          <button id="clearFoulB" class="btn btn-danger">Clear</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button id="timeoutB30" class="btn btn-small">Timeout B 30s</button>
+          <button id="timeoutB60" class="btn btn-small">Timeout B 60s</button>
+          <button id="cancelTimeoutB" class="btn btn-small">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Game controls -->
+      <div class="col">
+        <div style="display:flex;gap:8px;align-items:center">
+          <label class="label">Game Time (mm:ss)</label>
+          <input id="gameTimeInput" class="input" placeholder="10:00" style="width:110px" />
+          <button id="applyGameTime" class="btn btn-small">Apply</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button id="startPause" class="btn btn-add">Start</button>
+          <button id="resetClocks" class="btn btn-small">Reset Clocks</button>
+          <button id="stopAll" class="btn btn-danger">Stop</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+          <label class="label">Quarter</label>
+          <button id="prevQ" class="btn btn-small">◀</button>
+          <div id="quarterControl" style="min-width:30px;text-align:center;font-weight:800">1</div>
+          <button id="nextQ" class="btn btn-small">▶</button>
+        </div>
+      </div>
+
+      <!-- Shot / utilities -->
+      <div class="col" style="min-width:260px">
+        <div style="display:flex;gap:8px;align-items:center">
+          <label class="label">Shot Clock</label>
+          <input id="customShotInput" class="input" style="width:90px" value="24" />
+          <button id="applyShot" class="btn btn-small">Apply</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button id="reset24" class="btn btn-small">Reset 24</button>
+          <button id="reset14" class="btn btn-small">Reset 14</button>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:10px;align-items:center">
+          <button id="swapPoss" class="btn btn-small">Toggle Poss</button>
+          <div class="utility">
+            <label class="label" style="margin-right:6px">Auto-buzzer</label>
+            <select id="autoBuzzerLen" class="input" style="width:80px"><option value="3">3s</option><option value="5">5s</option></select>
+            <button id="broadcastMode" class="btn btn-small">Broadcast Mode</button>
+            <button id="fullscreenBtn" class="btn btn-small">Fullscreen</button>
+            <button id="saveBtn" class="btn btn-small">Save</button>
+            <button id="loadBtn" class="btn btn-small">Load</button>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:12px;align-items:center">
+          <div style="display:flex;flex-direction:column;align-items:center">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Manual Buzzer (hold/touch)</div>
+            <button id="buzzerBtn" class="buzzer-btn" aria-pressed="false" tabindex="0">BUZZER</button>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
 <script>
-document.addEventListener('DOMContentLoaded', ()=> {
-  // Query elements (all exist now)
+/* Final working scoreboard JS
+   - Uses DOMContentLoaded for reliable binding
+   - pointerdown/pointerup for buzzer (works on touch/mouse)
+   - robust controls for all features
+*/
+document.addEventListener('DOMContentLoaded', () => {
+  // Display elements
   const dispTeamA = document.getElementById('dispTeamA');
   const dispTeamB = document.getElementById('dispTeamB');
   const dispScoreA = document.getElementById('dispScoreA');
@@ -226,14 +247,13 @@ document.addEventListener('DOMContentLoaded', ()=> {
   const dispTimeoutA = document.getElementById('dispTimeoutA');
   const dispTimeoutB = document.getElementById('dispTimeoutB');
 
+  // Control elements
   const teamAInput = document.getElementById('teamAInput');
   const teamBInput = document.getElementById('teamBInput');
-  const applyNamesBtn = document.getElementById('applyNames');
-
+  const applyNames = document.getElementById('applyNames');
   const scoreBtns = Array.from(document.querySelectorAll('.btn-score'));
   const resetA = document.getElementById('resetA');
   const resetB = document.getElementById('resetB');
-
   const foulAplus = document.getElementById('foulAplus');
   const foulAminus = document.getElementById('foulAminus');
   const foulBplus = document.getElementById('foulBplus');
@@ -243,31 +263,30 @@ document.addEventListener('DOMContentLoaded', ()=> {
   const clearFoulA = document.getElementById('clearFoulA');
   const clearFoulB = document.getElementById('clearFoulB');
 
-  const startPauseBtn = document.getElementById('startPause');
-  const resetClocksBtn = document.getElementById('resetClocks');
-  const stopAllBtn = document.getElementById('stopAll');
+  const startPause = document.getElementById('startPause');
+  const resetClocks = document.getElementById('resetClocks');
+  const stopAll = document.getElementById('stopAll');
   const gameTimeInput = document.getElementById('gameTimeInput');
-  const applyGameTimeBtn = document.getElementById('applyGameTime');
-
+  const applyGameTime = document.getElementById('applyGameTime');
   const prevQ = document.getElementById('prevQ');
   const nextQ = document.getElementById('nextQ');
   const quarterControl = document.getElementById('quarterControl');
 
   const customShotInput = document.getElementById('customShotInput');
-  const applyShotBtn = document.getElementById('applyShot');
-  const reset24Btn = document.getElementById('reset24');
-  const reset14Btn = document.getElementById('reset14');
+  const applyShot = document.getElementById('applyShot');
+  const reset24 = document.getElementById('reset24');
+  const reset14 = document.getElementById('reset14');
 
-  const swapPossBtn = document.getElementById('swapPoss');
-  const broadcastModeBtn = document.getElementById('broadcastMode');
+  const swapPoss = document.getElementById('swapPoss');
+  const broadcastMode = document.getElementById('broadcastMode');
   const fullscreenBtn = document.getElementById('fullscreenBtn');
-  const controlsPanel = document.getElementById('controlsPanel');
-  const broadcastDisplay = document.getElementById('broadcastDisplay');
+  const controlsPanel = document.getElementById('controls');
+  const broadcastDisplay = document.getElementById('broadcast');
   const saveBtn = document.getElementById('saveBtn');
   const loadBtn = document.getElementById('loadBtn');
 
   const buzzerBtn = document.getElementById('buzzerBtn');
-  const autoBuzzerLenSelect = document.getElementById('autoBuzzerLen');
+  const autoBuzzerLen = document.getElementById('autoBuzzerLen');
 
   const timeoutA30 = document.getElementById('timeoutA30');
   const timeoutA60 = document.getElementById('timeoutA60');
@@ -276,10 +295,16 @@ document.addEventListener('DOMContentLoaded', ()=> {
   const cancelTimeoutA = document.getElementById('cancelTimeoutA');
   const cancelTimeoutB = document.getElementById('cancelTimeoutB');
 
-  // Audio setup
+  // Make sure required DOM found
+  if(!dispGameClock || !buzzerBtn) {
+    alert('Missing elements — make sure you copied the full file.');
+    return;
+  }
+
+  // Audio Context
   const AudioCtx = (window.AudioContext || window.webkitAudioContext) ? new (window.AudioContext || window.webkitAudioContext)() : null;
-  let buzzerOsc = null;
-  let buzzerGain = null;
+  // Basic manual buzzer oscillator variables
+  let buzzerOsc = null, buzzerGain = null;
 
   function startManualBuzzer(){
     if(!AudioCtx) return;
@@ -295,10 +320,9 @@ document.addEventListener('DOMContentLoaded', ()=> {
   }
   function stopManualBuzzer(){
     if(!AudioCtx || !buzzerOsc) return;
-    buzzerGain.gain.exponentialRampToValueAtTime(0.0001, AudioCtx.currentTime + 0.08);
+    buzzerGain.gain.exponentialRampToValueAtTime(0.0001, AudioCtx.currentTime + 0.06);
     setTimeout(()=>{ try{ buzzerOsc.stop(); buzzerOsc.disconnect(); buzzerGain.disconnect(); }catch(e){} buzzerOsc=null; buzzerGain=null; }, 120);
   }
-
   function playAutoBuzzer(seconds=3){
     if(!AudioCtx) return;
     const o1 = AudioCtx.createOscillator();
@@ -331,11 +355,11 @@ document.addEventListener('DOMContentLoaded', ()=> {
   let shotInterval = null;
   const shotTickMs = 100;
 
-  // Timeout objects
+  // Timeouts
   let timeoutA = null;
   let timeoutB = null;
 
-  // Helpers
+  // helpers
   function formatMMSS(sec){
     sec = Math.max(0, Math.floor(sec));
     const m = Math.floor(sec/60);
@@ -349,7 +373,9 @@ document.addEventListener('DOMContentLoaded', ()=> {
     return `${whole}.${dec}`;
   }
 
-  function renderDisplay(){
+  function isAnyTimeoutActive(){ return (timeoutA && timeoutA.remaining > 0) || (timeoutB && timeoutB.remaining > 0); }
+
+  function renderAll(){
     dispTeamA.textContent = teamAInput.value.toUpperCase();
     dispTeamB.textContent = teamBInput.value.toUpperCase();
     dispScoreA.textContent = scoreA;
@@ -360,158 +386,151 @@ document.addEventListener('DOMContentLoaded', ()=> {
     dispFoulB.textContent = foulB;
     dispQuarter.textContent = quarter;
     dispPoss.textContent = possession;
-    foulAcontrol.textContent = foulA;
-    foulBcontrol.textContent = foulB;
+    document.getElementById('foulAcontrol').textContent = foulA;
+    document.getElementById('foulBcontrol').textContent = foulB;
     quarterControl.textContent = quarter;
-    dispTimeoutA.textContent = timeoutA && timeoutA.remaining > 0 ? formatMMSS(Math.ceil(timeoutA.remaining)) : '—';
-    dispTimeoutB.textContent = timeoutB && timeoutB.remaining > 0 ? formatMMSS(Math.ceil(timeoutB.remaining)) : '—';
-    if(shotTime <= 5 && shotTime > 0) document.getElementById('dispShot').classList.add('blink');
-    else document.getElementById('dispShot').classList.remove('blink');
+    dispTimeoutA.textContent = (timeoutA && timeoutA.remaining > 0) ? formatMMSS(Math.ceil(timeoutA.remaining)) : '—';
+    dispTimeoutB.textContent = (timeoutB && timeoutB.remaining > 0) ? formatMMSS(Math.ceil(timeoutB.remaining)) : '—';
+    // blink shot if under 5
+    const shotEl = document.getElementById('dispShot');
+    if(shotTime <= 5 && shotTime > 0) shotEl.classList.add('blink'); else shotEl.classList.remove('blink');
   }
 
-  function isAnyTimeoutActive(){
-    return (timeoutA && timeoutA.remaining > 0) || (timeoutB && timeoutB.remaining > 0);
-  }
-
+  // Timer logic
   function startAll(){
     if(running) return;
     running = true;
-    startPauseBtn.textContent = 'Pause';
-    gameInterval = setInterval(()=> {
+    startPause.textContent = 'Pause';
+      // game tick
+    gameInterval = setInterval(()=>{
       if(!isAnyTimeoutActive()){
         if(gameTime > 0){
           gameTime = Math.max(0, gameTime - 1);
           if(gameTime === 0){
-            const len = parseInt(autoBuzzerLenSelect.value) || 3;
+            const len = parseInt(autoBuzzerLen.value) || 3;
             playAutoBuzzer(len);
             pauseAll();
           }
-        } else {
-          pauseAll();
-        }
+        } else pauseAll();
       }
-      renderDisplay();
+      renderAll();
     }, 1000);
 
+    // shot tick (Option A: starts/pauses with main clock)
     shotInterval = setInterval(()=>{
       if(!isAnyTimeoutActive() && running){
         if(shotTime > 0){
           shotTime = Math.max(0, +(shotTime - (shotTickMs/1000)).toFixed(3));
           if(shotTime <= 0){
-            const len = parseInt(autoBuzzerLenSelect.value) || 3;
+            const len = parseInt(autoBuzzerLen.value) || 3;
             playAutoBuzzer(len);
           }
         }
       }
-      renderDisplay();
+      renderAll();
     }, shotTickMs);
 
     if(AudioCtx && AudioCtx.state === 'suspended') AudioCtx.resume();
   }
   function pauseAll(){
     running = false;
-    startPauseBtn.textContent = 'Start';
+    startPause.textContent = 'Start';
     clearInterval(gameInterval); gameInterval = null;
     clearInterval(shotInterval); shotInterval = null;
   }
 
-    // Score / foul handlers
-  scoreBtns.forEach(b=>{
-    b.addEventListener('click', ()=>{
-      const team = b.getAttribute('data-team');
-      const add = parseInt(b.getAttribute('data-add')||0);
-      if(team === 'A') scoreA += add;
-      else scoreB += add;
-      possession = (team === 'A') ? 'B' : 'A';
-      shotTime = shotDefault;
-      renderDisplay();
-    });
-  });
-  resetA.addEventListener('click', ()=>{ scoreA = 0; renderDisplay(); });
-  resetB.addEventListener('click', ()=>{ scoreB = 0; renderDisplay(); });
+  // Score / fouls
+  scoreBtns.forEach(b=> b.addEventListener('click', ()=> {
+    const team = b.dataset.team;
+    const add = parseInt(b.dataset.add||0);
+    if(team === 'A') scoreA += add; else scoreB += add;
+    possession = (team === 'A') ? 'B' : 'A';
+    shotTime = shotDefault;
+    renderAll();
+  }));
+  resetA.addEventListener('click', ()=> { scoreA = 0; renderAll(); });
+  resetB.addEventListener('click', ()=> { scoreB = 0; renderAll(); });
 
-  foulAplus.addEventListener('click', ()=>{ foulA++; renderDisplay(); });
-  foulAminus.addEventListener('click', ()=>{ foulA = Math.max(0, foulA-1); renderDisplay(); });
-  foulBplus.addEventListener('click', ()=>{ foulB++; renderDisplay(); });
-  foulBminus.addEventListener('click', ()=>{ foulB = Math.max(0, foulB-1); renderDisplay(); });
-  clearFoulA.addEventListener('click', ()=>{ foulA = 0; renderDisplay(); });
-  clearFoulB.addEventListener('click', ()=>{ foulB = 0; renderDisplay(); });
+  // Fouls bindings (some old pages may not have these elements; guard)
+  try{
+    document.getElementById('foulAplus')?.addEventListener('click', ()=>{ foulA++; renderAll(); });
+    document.getElementById('foulAminus')?.addEventListener('click', ()=>{ foulA = Math.max(0, foulA-1); renderAll(); });
+    document.getElementById('foulBplus')?.addEventListener('click', ()=>{ foulB++; renderAll(); });
+    document.getElementById('foulBminus')?.addEventListener('click', ()=>{ foulB = Math.max(0, foulB-1); renderAll(); });
+  } catch(e){ /* ignore */ }
+  document.getElementById('foulAplus')?.addEventListener('click', ()=>{ foulA++; renderAll(); });
+  document.getElementById('foulAminus')?.addEventListener('click', ()=>{ foulA = Math.max(0, foulA-1); renderAll(); });
+  document.getElementById('foulBplus')?.addEventListener('click', ()=>{ foulB++; renderAll(); });
+  document.getElementById('foulBminus')?.addEventListener('click', ()=>{ foulB = Math.max(0, foulB-1); renderAll(); });
+
+  document.getElementById('clearFoulA')?.addEventListener('click', ()=>{ foulA = 0; renderAll(); });
+  document.getElementById('clearFoulB')?.addEventListener('click', ()=>{ foulB = 0; renderAll(); });
 
   // Game controls
-  startPauseBtn.addEventListener('click', ()=>{ if(running) pauseAll(); else startAll(); });
-  resetClocksBtn.addEventListener('click', ()=>{
+  startPause.addEventListener('click', ()=> { if(running) pauseAll(); else startAll(); });
+  resetClocks.addEventListener('click', ()=> {
     gameTime = timePerQuarter;
     shotDefault = parseFloat(customShotInput.value) || shotDefault;
     shotTime = shotDefault;
     pauseAll();
-    renderDisplay();
+    renderAll();
   });
-  stopAllBtn.addEventListener('click', ()=>{ pauseAll(); gameTime = 0; shotTime = 0; renderDisplay(); });
+  stopAll.addEventListener('click', ()=> { pauseAll(); gameTime = 0; shotTime = 0; renderAll(); });
 
-  applyGameTimeBtn.addEventListener('click', ()=>{
-    const v = (gameTimeInput.value || '').trim();
+  applyGameTime.addEventListener('click', ()=>{
+    const v = (gameTimeInput.value||'').trim();
     let sec = null;
     if(v.includes(':')){
       const parts = v.split(':').map(p=>parseInt(p||0));
-      if(parts.length===2) sec = parts[0]*60 + Math.min(59, Math.max(0, parts[1]));
+      if(parts.length === 2) sec = parts[0]*60 + Math.min(59, Math.max(0, parts[1]));
     } else {
       const m = parseFloat(v);
       if(!isNaN(m)) sec = Math.round(m*60);
     }
-    if(sec === null || isNaN(sec)){
-      alert('Enter time as mm:ss or minutes (e.g., 10:00 or 10)');
-      return;
-    }
-    gameTime = sec; timePerQuarter = sec;
-    renderDisplay();
+    if(sec === null || isNaN(sec)){ alert('Enter time as mm:ss or minutes (e.g., 10:00 or 10)'); return; }
+    gameTime = sec; timePerQuarter = sec; renderAll();
   });
 
-  prevQ.addEventListener('click', ()=>{ quarter = Math.max(1, quarter-1); renderDisplay(); });
-  nextQ.addEventListener('click', ()=>{ quarter++; renderDisplay(); });
-
-  applyNamesBtn.addEventListener('click', ()=>{ renderDisplay(); });
+  prevQ.addEventListener('click', ()=>{ quarter = Math.max(1, quarter-1); renderAll(); });
+  nextQ.addEventListener('click', ()=>{ quarter++; renderAll(); });
+  applyNames.addEventListener('click', ()=>{ renderAll(); });
 
   // Shot controls
-  applyShotBtn.addEventListener('click', ()=>{
-    const x = parseFloat(customShotInput.value) || 24;
-    shotDefault = Math.max(1, x);
-    shotTime = shotDefault;
-    renderDisplay();
-  });
-  reset24Btn.addEventListener('click', ()=>{ shotDefault = 24; customShotInput.value = 24; shotTime = shotDefault; renderDisplay(); });
-  reset14Btn.addEventListener('click', ()=>{ shotDefault = 14; customShotInput.value = 14; shotTime = shotDefault; renderDisplay(); });
+  applyShot.addEventListener('click', ()=> { const x = parseFloat(customShotInput.value) || 24; shotDefault = Math.max(1, x); shotTime = shotDefault; renderAll(); });
+  reset24.addEventListener('click', ()=> { shotDefault = 24; customShotInput.value = 24; shotTime = shotDefault; renderAll(); });
+  reset14.addEventListener('click', ()=> { shotDefault = 14; customShotInput.value = 14; shotTime = shotDefault; renderAll(); });
 
-  swapPossBtn.addEventListener('click', ()=>{ possession = (possession === 'A') ? 'B' : 'A'; renderDisplay(); });
+  swapPoss.addEventListener('click', ()=> { possession = (possession === 'A') ? 'B' : 'A'; renderAll(); });
 
-  // Broadcast / fullscreen
-  let broadcastMode = false;
-  broadcastModeBtn.addEventListener('click', async ()=>{
-    broadcastMode = !broadcastMode;
-    if(broadcastMode){
+  // Broadcast mode (hide controls) + request fullscreen
+  let broadcast = false;
+  broadcastMode.addEventListener('click', async ()=> {
+    broadcast = !broadcast;
+    if(broadcast){
       controlsPanel.style.display = 'none';
-      broadcastModeBtn.textContent = 'Exit Broadcast';
+      broadcastMode.textContent = 'Exit Broadcast';
       try{ await broadcastDisplay.requestFullscreen?.(); }catch(e){}
     } else {
       controlsPanel.style.display = '';
-      broadcastModeBtn.textContent = 'Broadcast Mode';
+      broadcastMode.textContent = 'Broadcast Mode';
       try{ if(document.fullscreenElement) await document.exitFullscreen(); }catch(e){}
     }
   });
-  fullscreenBtn.addEventListener('click', async ()=>{
+  fullscreenBtn.addEventListener('click', async ()=> {
     if(!document.fullscreenElement) await document.documentElement.requestFullscreen?.();
     else await document.exitFullscreen?.();
   });
 
-  // Save/Load
-  saveBtn.addEventListener('click', ()=>{
+  // Save / Load
+  saveBtn.addEventListener('click', ()=> {
     const state = { scoreA, scoreB, foulA, foulB, quarter, possession, gameTime, timePerQuarter, shotDefault, shotTime, teamA: teamAInput.value, teamB: teamBInput.value };
-    localStorage.setItem('bb_pro_state', JSON.stringify(state));
-    alert('Saved locally');
+    localStorage.setItem('bb_final_state', JSON.stringify(state));
+    alert('Saved locally.');
   });
-  loadBtn.addEventListener('click', ()=>{
-    const s = localStorage.getItem('bb_pro_state');
+  loadBtn.addEventListener('click', ()=> {
+    const s = localStorage.getItem('bb_final_state');
     if(!s){ alert('No saved state'); return; }
-    try{
+    try {
       const st = JSON.parse(s);
       scoreA = st.scoreA||0; scoreB = st.scoreB||0;
       foulA = st.foulA||0; foulB = st.foulB||0;
@@ -519,32 +538,53 @@ document.addEventListener('DOMContentLoaded', ()=> {
       gameTime = st.gameTime ?? timePerQuarter; timePerQuarter = st.timePerQuarter ?? timePerQuarter;
       shotDefault = st.shotDefault ?? shotDefault; shotTime = st.shotTime ?? shotDefault;
       teamAInput.value = st.teamA || teamAInput.value; teamBInput.value = st.teamB || teamBInput.value;
-      renderDisplay(); alert('Loaded');
-    }catch(e){ alert('Failed to load: '+e); }
+      renderAll();
+      alert('Loaded.');
+    } catch(e){ alert('Failed to load: '+e); }
   });
 
-  // Manual buzzer hold (mouse/touch) and keyboard short buzz
-  function attachBuzzerHold(el){
-    const start = (evt)=>{
-      evt.preventDefault();
+  // Manual buzzer: pointer events (reliable across devices)
+  function attachBuzzer(el){
+    const start = (ev) => {
+      ev.preventDefault();
       if(AudioCtx && AudioCtx.state === 'suspended') AudioCtx.resume();
       startManualBuzzer();
       el.setAttribute('aria-pressed','true');
     };
-    const end = (evt)=>{
-      evt.preventDefault();
+    const end = (ev) => {
+      ev.preventDefault();
       stopManualBuzzer();
       el.setAttribute('aria-pressed','false');
     };
-    el.addEventListener('mousedown', start);
-    window.addEventListener('mouseup', end);
-    el.addEventListener('touchstart', start, {passive:false});
-    window.addEventListener('touchend', end);
-    el.addEventListener('keydown', (e)=>{
+    el.addEventListener('pointerdown', start);
+    window.addEventListener('pointerup', end);
+    // keyboard (space/enter) -> short buzz
+    el.addEventListener('keydown', (e)=> {
       if(e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); if(AudioCtx && AudioCtx.state === 'suspended') AudioCtx.resume(); startManualBuzzer(); setTimeout(()=>stopManualBuzzer(), 400); }
     });
+    // prevent default touch scroll
+    el.style.touchAction = 'none';
   }
-  attachBuzzerHold(buzzerBtn);
+  attachBuzzer(buzzerBtn);
+
+  // Play short buzzer via 'B' key
+  window.addEventListener('keydown', (e) => {
+    const tag = document.activeElement && document.activeElement.tagName.toLowerCase();
+    if(tag === 'input' || tag === 'textarea') { if(e.key === 'Escape') document.activeElement.blur(); return; }
+    if(e.key === 'b' || e.key === 'B'){ if(AudioCtx && AudioCtx.state === 'suspended') AudioCtx.resume(); startManualBuzzer(); setTimeout(()=>stopManualBuzzer(), 400); }
+    if(e.code === 'Space'){ e.preventDefault(); if(running) pauseAll(); else startAll(); }
+    if(e.key === 'r' || e.key === 'R'){ gameTime = timePerQuarter; shotTime = shotDefault; renderAll(); }
+    if(e.key === 's' || e.key === 'S'){ shotTime = shotDefault; renderAll(); }
+    // quick scoring keys
+    if(e.key === '1'){ scoreA += 1; possession='B'; shotTime = shotDefault; renderAll(); }
+    if(e.key === '2'){ scoreA += 2; possession='B'; shotTime = shotDefault; renderAll(); }
+    if(e.key === '3'){ scoreA += 3; possession='B'; shotTime = shotDefault; renderAll(); }
+    if(e.key === '7'){ scoreB += 1; possession='A'; shotTime = shotDefault; renderAll(); }
+    if(e.key === '8'){ scoreB += 2; possession='A'; shotTime = shotDefault; renderAll(); }
+    if(e.key === '9'){ scoreB += 3; possession='A'; shotTime = shotDefault; renderAll(); }
+    if(e.key === 't' || e.key === 'T'){ startTimeout('A', 30); }
+    if(e.key === 'y' || e.key === 'Y'){ startTimeout('B', 30); }
+  });
 
   // Timeout helpers
   function startTimeout(team, seconds){
@@ -559,36 +599,28 @@ document.addEventListener('DOMContentLoaded', ()=> {
       pauseAll();
       startTimeoutInterval('B');
     }
-    renderDisplay();
+    renderAll();
   }
-
   function startTimeoutInterval(team){
-    const t = team === 'A' ? timeoutA : timeoutB;
+    const t = (team === 'A') ? timeoutA : timeoutB;
     if(!t) return;
     t.intervalId = setInterval(()=>{
       t.remaining = Math.max(0, +(t.remaining - 0.2).toFixed(2));
       if(t.remaining <= 0){
         clearInterval(t.intervalId); t.intervalId = null;
         if(team === 'A') timeoutA = null; else timeoutB = null;
-        const len = parseInt(autoBuzzerLenSelect.value) || 3;
+        const len = parseInt(autoBuzzerLen.value) || 3;
         playAutoBuzzer(len);
-        renderDisplay();
-      } else {
-        renderDisplay();
-      }
+        renderAll();
+        // do not auto-resume; operator should press Start
+      } else renderAll();
     }, 200);
   }
-
   function cancelTimeout(team){
-    if(team === 'A' && timeoutA){
-      clearInterval(timeoutA.intervalId); timeoutA = null;
-    }
-    if(team === 'B' && timeoutB){
-      clearInterval(timeoutB.intervalId); timeoutB = null;
-    }
-    renderDisplay();
+    if(team === 'A' && timeoutA){ clearInterval(timeoutA.intervalId); timeoutA = null; }
+    if(team === 'B' && timeoutB){ clearInterval(timeoutB.intervalId); timeoutB = null; }
+    renderAll();
   }
-
   timeoutA30.addEventListener('click', ()=> startTimeout('A', 30));
   timeoutA60.addEventListener('click', ()=> startTimeout('A', 60));
   timeoutB30.addEventListener('click', ()=> startTimeout('B', 30));
@@ -596,28 +628,23 @@ document.addEventListener('DOMContentLoaded', ()=> {
   cancelTimeoutA.addEventListener('click', ()=> cancelTimeout('A'));
   cancelTimeoutB.addEventListener('click', ()=> cancelTimeout('B'));
 
-  // keyboard shortcuts
-  window.addEventListener('keydown', (e)=>{
-    const tag = document.activeElement && document.activeElement.tagName.toLowerCase();
-    if(tag === 'input' || tag === 'textarea'){ if(e.key === 'Escape') document.activeElement.blur(); return; }
-    if(e.code === 'Space'){ e.preventDefault(); if(running) pauseAll(); else startAll(); }
-    if(e.key === 'b' || e.key === 'B'){ if(AudioCtx && AudioCtx.state === 'suspended') AudioCtx.resume(); startManualBuzzer(); setTimeout(()=>stopManualBuzzer(), 400); }
-    if(e.key === 't' || e.key === 'T'){ startTimeout('A', 30); }
-    if(e.key === 'y' || e.key === 'Y'){ startTimeout('B', 30); }
-    if(e.key === '1'){ scoreA += 1; possession='B'; shotTime = shotDefault; renderDisplay(); }
-    if(e.key === '2'){ scoreA += 2; possession='B'; shotTime = shotDefault; renderDisplay(); }
-    if(e.key === '3'){ scoreA += 3; possession='B'; shotTime = shotDefault; renderDisplay(); }
-    if(e.key === '7'){ scoreB += 1; possession='A'; shotTime = shotDefault; renderDisplay(); }
-    if(e.key === '8'){ scoreB += 2; possession='A'; shotTime = shotDefault; renderDisplay(); }
-    if(e.key === '9'){ scoreB += 3; possession='A'; shotTime = shotDefault; renderDisplay(); }
-  });
+  // Attach timeout elements that may not exist in some copies
+  (function attachOptionalIds(){
+    ['foulAplus','foulAminus','foulBplus','foulBminus'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el && !el.listenerAttached){
+        // already attached above where present
+        el.listenerAttached = true;
+      }
+    });
+  })();
 
   // initial render
-  renderDisplay();
+  renderAll();
 
-  // Expose small API for debugging
-  window._proScoreboard = {
-    getState: ()=>({scoreA,scoreB,foulA,foulB,quarter,poss:possession,gameTime,shotTime,timeoutA,timeoutB}),
+  // expose for debugging if needed
+  window._finalScoreboard = {
+    getState: () => ({scoreA,scoreB,foulA,foulB,quarter,poss:possession,gameTime,shotTime,timeoutA,timeoutB}),
     start: startAll, pause: pauseAll, startTimeout
   };
 });
