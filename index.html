@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Broadcast Basketball Scoreboard — Final (Orange/Yellow)</title>
+<title>Broadcast Basketball Scoreboard — Final (Possession)</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#000814;
     --panel:#071229;
-    --score-orng: #ff9400; /* orange for scores */
-    --clock-ylw: #ffd24d; /* yellow for game clock */
+    --score-orng: #ff9400;
+    --clock-ylw: #ffd24d;
     --shot-cyan: #28f1ff;
     --text:#ffffff;
     --muted:#98a6bf;
@@ -25,7 +25,10 @@
   }
   .display-row{display:flex;align-items:center;justify-content:space-between;gap:12px;}
   .team-block{display:flex;flex-direction:column;align-items:center;width:38%;}
+  .team-name-row{display:flex;align-items:center;gap:8px;}
   .team-name{font-family:"Orbitron",sans-serif;font-weight:700;font-size:30px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;text-align:center;}
+  .pos-arrow{font-family:"Orbitron",sans-serif;font-size:28px;color:transparent;transition:color .12s, text-shadow .12s;}
+  .pos-arrow.active{ color:var(--score-orng); text-shadow: 0 8px 30px rgba(255,148,0,0.22); }
   .team-score{
     font-family:"Orbitron",sans-serif;font-weight:900;font-size:120px;line-height:0.9;color:var(--score-orng);
     text-shadow: 0 10px 40px rgba(255,148,0,0.20), 0 0 30px rgba(255,148,0,0.12);
@@ -79,7 +82,10 @@
     <div id="broadcast" class="display" role="region" aria-label="Broadcast Display">
       <div class="display-row">
         <div class="team-block">
-          <div class="team-name" id="dispTeamA">HOME</div>
+          <div class="team-name-row">
+            <div id="arrowA" class="pos-arrow">➜</div>
+            <div class="team-name" id="dispTeamA">HOME</div>
+          </div>
           <div class="team-score" id="dispScoreA">0</div>
         </div>
 
@@ -96,7 +102,10 @@
         </div>
 
         <div class="team-block">
-          <div class="team-name" id="dispTeamB">AWAY</div>
+          <div class="team-name-row">
+            <div class="team-name" id="dispTeamB">AWAY</div>
+            <div id="arrowB" class="pos-arrow">➜</div>
+          </div>
           <div class="team-score" id="dispScoreB">0</div>
         </div>
       </div>
@@ -190,6 +199,12 @@
           <div id="quarterControl" style="min-width:30px;text-align:center;font-weight:800">1</div>
           <button id="nextQ" class="btn btn-small">▶</button>
         </div>
+
+        <!-- Possession controls (main area as requested) -->
+        <div style="display:flex;gap:8px;margin-top:10px;align-items:center">
+          <button id="togglePoss" class="btn btn-small">Toggle Possession</button>
+          <button id="resetPoss" class="btn btn-small">Reset Possession</button>
+        </div>
       </div>
 
       <!-- Shot / utilities -->
@@ -205,7 +220,7 @@
         </div>
 
         <div style="display:flex;gap:8px;margin-top:10px;align-items:center">
-          <button id="swapPoss" class="btn btn-small">Toggle Poss</button>
+          <button id="swapPoss" class="btn btn-small">Toggle Poss (Alt)</button>
           <div class="utility">
             <label class="label" style="margin-right:6px">Auto-buzzer</label>
             <select id="autoBuzzerLen" class="input" style="width:80px"><option value="3">3s</option><option value="5">5s</option></select>
@@ -227,11 +242,7 @@
   </div>
 
 <script>
-/* Final working scoreboard JS
-   - Uses DOMContentLoaded for reliable binding
-   - pointerdown/pointerup for buzzer (works on touch/mouse)
-   - robust controls for all features
-*/
+/* Full final scoreboard JS with possession toggle & reset */
 document.addEventListener('DOMContentLoaded', () => {
   // Display elements
   const dispTeamA = document.getElementById('dispTeamA');
@@ -246,8 +257,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const dispPoss = document.getElementById('dispPoss');
   const dispTimeoutA = document.getElementById('dispTimeoutA');
   const dispTimeoutB = document.getElementById('dispTimeoutB');
+  const arrowA = document.getElementById('arrowA');
+  const arrowB = document.getElementById('arrowB');
 
-  // Control elements
+  // Controls
   const teamAInput = document.getElementById('teamAInput');
   const teamBInput = document.getElementById('teamBInput');
   const applyNames = document.getElementById('applyNames');
@@ -278,6 +291,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const reset14 = document.getElementById('reset14');
 
   const swapPoss = document.getElementById('swapPoss');
+  const togglePoss = document.getElementById('togglePoss');
+  const resetPoss = document.getElementById('resetPoss');
   const broadcastMode = document.getElementById('broadcastMode');
   const fullscreenBtn = document.getElementById('fullscreenBtn');
   const controlsPanel = document.getElementById('controls');
@@ -295,15 +310,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const cancelTimeoutA = document.getElementById('cancelTimeoutA');
   const cancelTimeoutB = document.getElementById('cancelTimeoutB');
 
-  // Make sure required DOM found
-  if(!dispGameClock || !buzzerBtn) {
-    alert('Missing elements — make sure you copied the full file.');
-    return;
-  }
+  // Ensure DOM integrity
+  if(!dispGameClock){ alert('Incomplete file copy detected — please copy full file.'); return; }
 
-  // Audio Context
+  // Audio
   const AudioCtx = (window.AudioContext || window.webkitAudioContext) ? new (window.AudioContext || window.webkitAudioContext)() : null;
-  // Basic manual buzzer oscillator variables
   let buzzerOsc = null, buzzerGain = null;
 
   function startManualBuzzer(){
@@ -342,9 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let scoreA = 0, scoreB = 0;
   let foulA = 0, foulB = 0;
   let quarter = 1;
-  let possession = 'A';
-
-  // Clocks
+  let possession = null; // 'A' | 'B' | null (null = no possession)
   let timePerQuarter = 10 * 60;
   let gameTime = timePerQuarter;
   let running = false;
@@ -355,15 +364,13 @@ document.addEventListener('DOMContentLoaded', () => {
   let shotInterval = null;
   const shotTickMs = 100;
 
-  // Timeouts
   let timeoutA = null;
   let timeoutB = null;
 
-  // helpers
+  // Helpers
   function formatMMSS(sec){
     sec = Math.max(0, Math.floor(sec));
-    const m = Math.floor(sec/60);
-    const s = sec % 60;
+    const m = Math.floor(sec/60), s = sec%60;
     return `${m}:${s.toString().padStart(2,'0')}`;
   }
   function formatShot(t){
@@ -372,9 +379,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const dec = Math.floor((t - whole) * 10);
     return `${whole}.${dec}`;
   }
-
   function isAnyTimeoutActive(){ return (timeoutA && timeoutA.remaining > 0) || (timeoutB && timeoutB.remaining > 0); }
 
+    // Render
   function renderAll(){
     dispTeamA.textContent = teamAInput.value.toUpperCase();
     dispTeamB.textContent = teamBInput.value.toUpperCase();
@@ -385,23 +392,28 @@ document.addEventListener('DOMContentLoaded', () => {
     dispFoulA.textContent = foulA;
     dispFoulB.textContent = foulB;
     dispQuarter.textContent = quarter;
-    dispPoss.textContent = possession;
+    dispPoss.textContent = possession ? (possession === 'A' ? 'A' : 'B') : '—';
     document.getElementById('foulAcontrol').textContent = foulA;
     document.getElementById('foulBcontrol').textContent = foulB;
     quarterControl.textContent = quarter;
-    dispTimeoutA.textContent = (timeoutA && timeoutA.remaining > 0) ? formatMMSS(Math.ceil(timeoutA.remaining)) : '—';
-    dispTimeoutB.textContent = (timeoutB && timeoutB.remaining > 0) ? formatMMSS(Math.ceil(timeoutB.remaining)) : '—';
-    // blink shot if under 5
-    const shotEl = document.getElementById('dispShot');
-    if(shotTime <= 5 && shotTime > 0) shotEl.classList.add('blink'); else shotEl.classList.remove('blink');
+    dispTimeoutA.textContent = (timeoutA && timeoutA.remaining>0) ? formatMMSS(Math.ceil(timeoutA.remaining)) : '—';
+    dispTimeoutB.textContent = (timeoutB && timeoutB.remaining>0) ? formatMMSS(Math.ceil(timeoutB.remaining)) : '—';
+
+    // possession arrows
+    if(possession === 'A'){ arrowA.classList.add('active'); arrowB.classList.remove('active'); }
+    else if(possession === 'B'){ arrowB.classList.add('active'); arrowA.classList.remove('active'); }
+    else { arrowA.classList.remove('active'); arrowB.classList.remove('active'); }
+
+    // shot blink
+    if(shotTime <= 5 && shotTime > 0) document.getElementById('dispShot').classList.add('blink');
+    else document.getElementById('dispShot').classList.remove('blink');
   }
 
-  // Timer logic
+  // Timer core
   function startAll(){
     if(running) return;
     running = true;
     startPause.textContent = 'Pause';
-      // game tick
     gameInterval = setInterval(()=>{
       if(!isAnyTimeoutActive()){
         if(gameTime > 0){
@@ -416,7 +428,6 @@ document.addEventListener('DOMContentLoaded', () => {
       renderAll();
     }, 1000);
 
-    // shot tick (Option A: starts/pauses with main clock)
     shotInterval = setInterval(()=>{
       if(!isAnyTimeoutActive() && running){
         if(shotTime > 0){
@@ -439,30 +450,21 @@ document.addEventListener('DOMContentLoaded', () => {
     clearInterval(shotInterval); shotInterval = null;
   }
 
-  // Score / fouls
-  scoreBtns.forEach(b=> b.addEventListener('click', ()=> {
-    const team = b.dataset.team;
-    const add = parseInt(b.dataset.add||0);
+  // Score / foul handlers
+  scoreBtns.forEach(b => b.addEventListener('click', ()=>{
+    const team = b.dataset.team, add = parseInt(b.dataset.add||0);
     if(team === 'A') scoreA += add; else scoreB += add;
     possession = (team === 'A') ? 'B' : 'A';
     shotTime = shotDefault;
     renderAll();
   }));
-  resetA.addEventListener('click', ()=> { scoreA = 0; renderAll(); });
-  resetB.addEventListener('click', ()=> { scoreB = 0; renderAll(); });
+  resetA.addEventListener('click', ()=>{ scoreA = 0; renderAll(); });
+  resetB.addEventListener('click', ()=>{ scoreB = 0; renderAll(); });
 
-  // Fouls bindings (some old pages may not have these elements; guard)
-  try{
-    document.getElementById('foulAplus')?.addEventListener('click', ()=>{ foulA++; renderAll(); });
-    document.getElementById('foulAminus')?.addEventListener('click', ()=>{ foulA = Math.max(0, foulA-1); renderAll(); });
-    document.getElementById('foulBplus')?.addEventListener('click', ()=>{ foulB++; renderAll(); });
-    document.getElementById('foulBminus')?.addEventListener('click', ()=>{ foulB = Math.max(0, foulB-1); renderAll(); });
-  } catch(e){ /* ignore */ }
   document.getElementById('foulAplus')?.addEventListener('click', ()=>{ foulA++; renderAll(); });
   document.getElementById('foulAminus')?.addEventListener('click', ()=>{ foulA = Math.max(0, foulA-1); renderAll(); });
   document.getElementById('foulBplus')?.addEventListener('click', ()=>{ foulB++; renderAll(); });
   document.getElementById('foulBminus')?.addEventListener('click', ()=>{ foulB = Math.max(0, foulB-1); renderAll(); });
-
   document.getElementById('clearFoulA')?.addEventListener('click', ()=>{ foulA = 0; renderAll(); });
   document.getElementById('clearFoulB')?.addEventListener('click', ()=>{ foulB = 0; renderAll(); });
 
@@ -482,7 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let sec = null;
     if(v.includes(':')){
       const parts = v.split(':').map(p=>parseInt(p||0));
-      if(parts.length === 2) sec = parts[0]*60 + Math.min(59, Math.max(0, parts[1]));
+      if(parts.length===2) sec = parts[0]*60 + Math.min(59, Math.max(0, parts[1]));
     } else {
       const m = parseFloat(v);
       if(!isNaN(m)) sec = Math.round(m*60);
@@ -502,7 +504,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   swapPoss.addEventListener('click', ()=> { possession = (possession === 'A') ? 'B' : 'A'; renderAll(); });
 
-  // Broadcast mode (hide controls) + request fullscreen
+  // Possession controls (main area)
+  togglePoss.addEventListener('click', ()=> {
+    if(possession === 'A') possession = 'B';
+    else if(possession === 'B') possession = 'A';
+    else possession = 'A'; // default to A if none
+    renderAll();
+  });
+  resetPoss.addEventListener('click', ()=> { possession = null; renderAll(); });
+
+  // Broadcast / fullscreen
   let broadcast = false;
   broadcastMode.addEventListener('click', async ()=> {
     broadcast = !broadcast;
@@ -524,17 +535,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // Save / Load
   saveBtn.addEventListener('click', ()=> {
     const state = { scoreA, scoreB, foulA, foulB, quarter, possession, gameTime, timePerQuarter, shotDefault, shotTime, teamA: teamAInput.value, teamB: teamBInput.value };
-    localStorage.setItem('bb_final_state', JSON.stringify(state));
+    localStorage.setItem('bb_final_possession_state', JSON.stringify(state));
     alert('Saved locally.');
   });
   loadBtn.addEventListener('click', ()=> {
-    const s = localStorage.getItem('bb_final_state');
+    const s = localStorage.getItem('bb_final_possession_state');
     if(!s){ alert('No saved state'); return; }
     try {
       const st = JSON.parse(s);
       scoreA = st.scoreA||0; scoreB = st.scoreB||0;
       foulA = st.foulA||0; foulB = st.foulB||0;
-      quarter = st.quarter||1; possession = st.possession||'A';
+      quarter = st.quarter||1; possession = st.possession ?? null;
       gameTime = st.gameTime ?? timePerQuarter; timePerQuarter = st.timePerQuarter ?? timePerQuarter;
       shotDefault = st.shotDefault ?? shotDefault; shotTime = st.shotTime ?? shotDefault;
       teamAInput.value = st.teamA || teamAInput.value; teamBInput.value = st.teamB || teamBInput.value;
@@ -543,7 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch(e){ alert('Failed to load: '+e); }
   });
 
-  // Manual buzzer: pointer events (reliable across devices)
+  // Manual buzzer: pointer events
   function attachBuzzer(el){
     const start = (ev) => {
       ev.preventDefault();
@@ -558,16 +569,14 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     el.addEventListener('pointerdown', start);
     window.addEventListener('pointerup', end);
-    // keyboard (space/enter) -> short buzz
     el.addEventListener('keydown', (e)=> {
       if(e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); if(AudioCtx && AudioCtx.state === 'suspended') AudioCtx.resume(); startManualBuzzer(); setTimeout(()=>stopManualBuzzer(), 400); }
     });
-    // prevent default touch scroll
     el.style.touchAction = 'none';
   }
   attachBuzzer(buzzerBtn);
 
-  // Play short buzzer via 'B' key
+  // Short buzzer via keyboard; playback resume handling
   window.addEventListener('keydown', (e) => {
     const tag = document.activeElement && document.activeElement.tagName.toLowerCase();
     if(tag === 'input' || tag === 'textarea') { if(e.key === 'Escape') document.activeElement.blur(); return; }
@@ -575,7 +584,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if(e.code === 'Space'){ e.preventDefault(); if(running) pauseAll(); else startAll(); }
     if(e.key === 'r' || e.key === 'R'){ gameTime = timePerQuarter; shotTime = shotDefault; renderAll(); }
     if(e.key === 's' || e.key === 'S'){ shotTime = shotDefault; renderAll(); }
-    // quick scoring keys
     if(e.key === '1'){ scoreA += 1; possession='B'; shotTime = shotDefault; renderAll(); }
     if(e.key === '2'){ scoreA += 2; possession='B'; shotTime = shotDefault; renderAll(); }
     if(e.key === '3'){ scoreA += 3; possession='B'; shotTime = shotDefault; renderAll(); }
@@ -612,7 +620,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const len = parseInt(autoBuzzerLen.value) || 3;
         playAutoBuzzer(len);
         renderAll();
-        // do not auto-resume; operator should press Start
       } else renderAll();
     }, 200);
   }
@@ -628,24 +635,13 @@ document.addEventListener('DOMContentLoaded', () => {
   cancelTimeoutA.addEventListener('click', ()=> cancelTimeout('A'));
   cancelTimeoutB.addEventListener('click', ()=> cancelTimeout('B'));
 
-  // Attach timeout elements that may not exist in some copies
-  (function attachOptionalIds(){
-    ['foulAplus','foulAminus','foulBplus','foulBminus'].forEach(id=>{
-      const el = document.getElementById(id);
-      if(el && !el.listenerAttached){
-        // already attached above where present
-        el.listenerAttached = true;
-      }
-    });
-  })();
-
   // initial render
   renderAll();
 
-  // expose for debugging if needed
-  window._finalScoreboard = {
-    getState: () => ({scoreA,scoreB,foulA,foulB,quarter,poss:possession,gameTime,shotTime,timeoutA,timeoutB}),
-    start: startAll, pause: pauseAll, startTimeout
+  // expose state for debugging
+  window._scoreboardFinalPoss = {
+    getState: ()=>({scoreA,scoreB,foulA,foulB,quarter,poss:possession,gameTime,shotTime,timeoutA,timeoutB}),
+    start: startAll, pause: pauseAll, togglePoss: ()=>{ togglePoss.click(); }
   };
 });
 </script>
